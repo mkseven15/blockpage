@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Restricted</title>
+    <style>
+        :root {
+            --std-red: #d60000;
+            --app-brown: #5c2b2b;
+            --text-gray: #333;
+            --label-gray: #777;
+            --bg-color: #ffffff;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-gray);
+        }
+
+        /* Container styling to match the centered look of the images */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            margin-top: 5vh;
+        }
+
+        /* The main Alert Header */
+        .alert-header {
+            width: 100%;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 12px 0;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border-radius: 2px;
+        }
+
+        /* Message below header */
+        .message {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #000;
+        }
+
+        /* Data List Area */
+        .data-list {
+            text-align: left;
+            display: inline-block;
+            margin: 0 auto;
+            font-size: 16px;
+            line-height: 1.6;
+            max-width: 100%;
+        }
+
+        .data-row {
+            margin-bottom: 4px;
+        }
+
+        .label {
+            font-weight: bold;
+            color: var(--label-gray);
+            margin-right: 8px;
+        }
+
+        .value {
+            font-weight: bold;
+            color: #000;
+            word-break: break-all;
+        }
+
+        /* Login Button (visible only in standard mode typically) */
+        .login-btn-container {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .login-btn {
+            background-color: #f0f0f0;
+            border: 1px solid #999;
+            color: #333;
+            padding: 5px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        .login-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Footer Section */
+        .footer {
+            margin-top: 40px;
+            width: 100%;
+            border-top: 2px solid #999;
+            padding-top: 20px;
+            text-align: center;
+        }
+
+        .policy-title {
+            color: #cc5500; /* Orange-ish red for policy title */
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .policy-text {
+            font-size: 14px;
+            max-width: 700px;
+            margin: 0 auto 30px auto;
+            line-height: 1.4;
+        }
+
+        .policy-link {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        /* Bottom red bar */
+        .bottom-bar {
+            width: 100%;
+            height: 40px;
+            margin-top: auto;
+        }
+
+        /* THEME CLASSES */
+        
+        /* Standard Theme (Bright Red) */
+        .theme-standard .alert-header {
+            background-color: var(--std-red);
+        }
+        .theme-standard .bottom-bar {
+            background-color: var(--std-red);
+        }
+
+        /* App Defender Theme (Dark Brown/Red) */
+        .theme-app-defender .alert-header {
+            background-color: var(--app-brown);
+            border-bottom: 4px solid #3e1c1c; /* Slight 3d effect seen in image 1 */
+        }
+        .theme-app-defender .bottom-bar {
+            background-color: var(--app-brown);
+        }
+        
+        /* Hide login button in App Defender mode if desired, or keep generic */
+        .theme-app-defender .login-btn-container {
+            display: none;
+        }
+
+        /* Responsive tweaks */
+        @media (max-width: 600px) {
+            .container { margin-top: 0; }
+            .data-list { width: 100%; }
+        }
+    </style>
+</head>
+<body class="theme-standard"> <!-- Default class, JS will update -->
+
+    <div class="container">
+        <!-- Header -->
+        <div id="header-bar" class="alert-header">RESTRICTED</div>
+
+        <!-- Main Content -->
+        <div class="message">
+            You have been restricted by the district's internet filter policy.
+        </div>
+
+        <!-- Details List -->
+        <div class="data-list" id="details-output">
+            <!-- Content injected by JS -->
+        </div>
+
+        <!-- Login Button (Optional based on image 2) -->
+        <div class="login-btn-container">
+            <button class="login-btn" onclick="alert('Redirecting to authentication portal...')">Login</button>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="policy-title">Acceptable Use Policy</div>
+            <div class="policy-text">
+                The site you have requested has been blocked because it does not comply with the 
+                filtering requirements as described by the <a href="#" class="policy-link">Children's Internet Protection Act (CIPA)</a>.
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom colored bar -->
+    <div id="bottom-bar" class="bottom-bar"></div>
+
+    <script>
+        /**
+         * Parses URL parameters and populates the block page.
+         * Handles both "Standard" and "App Defender" modes based on data presence.
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const body = document.body;
+            const headerBar = document.getElementById('header-bar');
+            const detailsOutput = document.getElementById('details-output');
+            
+            // --- 1. Extract Data ---
+            
+            // If no params exist, use these mock values for demonstration
+            const isDemo = !window.location.search; 
+            
+            const data = {
+                userEmail: params.get('cf_user_email') || (isDemo ? 'student@schooldistrict.edu' : ''),
+                siteUrl: params.get('cf_site_uri') || (isDemo ? 'https://www.gaming-site-example.com' : ''),
+                // Categories can appear multiple times, join them
+                categories: params.getAll('cf_request_category_names').concat(params.getAll('cf_request_categories')).join(', ') || (isDemo ? 'Gaming, Non-Managed' : ''),
+                sourceIp: params.get('cf_source_ip') || (isDemo ? '10.20.1.45' : ''),
+                ruleId: params.get('cf_rule_id'),
+                filterType: params.get('cf_filter'),
+                appName: params.get('cf_application_name') || params.get('cf_app_name'), // Check both common variants
+                timestamp: new Date().toLocaleString('en-US', { 
+                    weekday: 'short', 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit' 
+                })
+            };
+
+            // --- 2. Determine Mode (Standard vs App Defender) ---
+            
+            if (data.appName) {
+                // APP DEFENDER MODE
+                body.className = 'theme-app-defender';
+                headerBar.textContent = 'RESTRICTED BY APP DEFENDER';
+                
+                // Construct the fields specific to App Defender style
+                // Image 1 Order: URL, Application, Isolation Time (Fake), URL Categories, Policy, User, IP, Timestamp
+                renderRow('URL', cleanUrl(data.siteUrl));
+                renderRow('Application', data.appName);
+                // Isolation time is strictly visual sugar based on image 1
+                renderRow('Isolation Time', '57 Sec(s)'); 
+                renderRow('URL Categories', data.categories || 'Uncategorized');
+                
+                // Construct a policy string if we have a filter or rule ID, otherwise generic
+                const policyStr = data.ruleId ? `Rule=${data.ruleId.substring(0,8)}...` : 'Policy=strict-student-policy; NT Group=students';
+                renderRow('Policy', policyStr);
+                
+                renderRow('User', data.userEmail || 'Anonymous');
+                renderRow('User\'s IP', data.sourceIp);
+                renderRow('Timestamp', data.timestamp);
+
+            } else {
+                // STANDARD MODE
+                body.className = 'theme-standard';
+                headerBar.textContent = 'RESTRICTED';
+
+                // Image 2 Order: URL, URL Categories, Policy, User, User's IP, Timestamp
+                renderRow('URL', cleanUrl(data.siteUrl));
+                renderRow('URL Categories', data.categories || 'Non-Managed');
+                
+                // Logic for Policy display in standard mode
+                const policyStr = data.ruleId ? `Rule ID: ${data.ruleId}` : 'Policy=district-default; NT Group=students';
+                renderRow('Policy', policyStr);
+                
+                renderRow('User', data.userEmail || 'Anonymous');
+                renderRow('User\'s IP', data.sourceIp);
+                renderRow('Timestamp', data.timestamp);
+            }
+
+            // --- Helper Functions ---
+
+            function renderRow(label, value) {
+                if (!value) return; // Don't show empty rows
+                const row = document.createElement('div');
+                row.className = 'data-row';
+                
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'label';
+                labelSpan.textContent = label + ':';
+                
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'value';
+                valueSpan.textContent = value;
+
+                row.appendChild(labelSpan);
+                row.appendChild(valueSpan);
+                detailsOutput.appendChild(row);
+            }
+
+            function cleanUrl(urlStr) {
+                if (!urlStr) return '';
+                try {
+                    // Try to decode if it's encoded
+                    let decoded = decodeURIComponent(urlStr);
+                    // If it's a full URL, we might want to just show the domain or full path
+                    // The images show just domain sometimes or full path. We'll show full path but cleaned.
+                    return decoded;
+                } catch (e) {
+                    return urlStr;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
