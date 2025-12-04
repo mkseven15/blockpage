@@ -168,7 +168,7 @@
             
             <br>
             <div style="text-align: center;">
-                 <button class="btn-login" onclick="window.close()">Okay</button>
+                 <button class="btn-login" onclick="window.close()">Login</button>
             </div>
         </div>
 
@@ -217,7 +217,7 @@
                 // Show App specific rows
                 document.getElementById('row_app').style.display = 'block';
                 document.getElementById('disp_app').innerText = appName;
-                document.getElementById('row_iso').style.display = 'block'; // Showing dummy isolation time for effect
+                
             } else {
                 // --- STANDARD RESTRICTED MODE ---
                 headerEl.className = 'style-restricted';
@@ -229,7 +229,6 @@
             document.getElementById('disp_url').innerText = decodeURIComponent(siteUrl);
             document.getElementById('disp_cat').innerText = decodeURIComponent(categories).replace(/\+/g, ' ');
             document.getElementById('disp_policy').innerText = policyId;
-            document.getElementById('disp_user').innerText = userEmail;
             document.getElementById('disp_ip').innerText = sourceIp;
 
             // -- Generate Live Timestamp --
