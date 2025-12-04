@@ -15,7 +15,6 @@
             text-align: center;
         }
 
-        /* Container to keep things centered and restricted width */
         .mainDiv {
             width: 800px;
             margin: 0 auto;
@@ -23,37 +22,31 @@
             background-color: #FFFFFF;
         }
 
-        /* Dynamic Header Bar */
         #block_header {
             padding: 10px 0;
             color: #fff;
             font-weight: bold;
             font-size: 24px;
             text-transform: uppercase;
-            /* Box shadow mimicking the original screenshot */
             box-shadow: 0px 4px 4px rgba(0,0,0,0.3);
             margin-bottom: 30px;
         }
 
-        /* Default RED style (Standard Block) */
         .style-restricted {
-            background-color: #D60000; /* Bright Red */
+            background-color: #D60000;
             border-color: #D60000;
         }
 
-        /* APP DEFENDER style (Maroon) */
         .style-app-defender {
-            background-color: #5D2A2C; /* Maroon/Brown */
+            background-color: #5D2A2C;
             border-color: #5D2A2C;
         }
 
-        /* Main Message Text */
         .message-text {
             font-size: 16px;
             margin-bottom: 25px;
         }
 
-        /* Data Display Area */
         #data_container {
             text-align: left;
             display: inline-block;
@@ -63,7 +56,7 @@
 
         .label {
             font-weight: bold;
-            color: #606062; /* Dark Gray for labels */
+            color: #606062;
             width: 140px;
             display: inline-block;
         }
@@ -73,7 +66,6 @@
             color: #000;
         }
 
-        /* Footer Section */
         #footer {
             margin-top: 40px;
         }
@@ -86,7 +78,7 @@
         }
 
         .policy-title {
-            color: #CC3300; /* Red/Orange for Policy Title */
+            color: #CC3300;
             font-weight: bold;
             font-size: 16px;
             margin-bottom: 10px;
@@ -103,14 +95,12 @@
             text-decoration: underline;
         }
 
-        /* Bottom Bar */
         #bottom_bar {
             height: 40px;
             width: 100%;
             margin-top: 20px;
         }
 
-        /* Login Button Styling */
         .btn-login {
             background-color: #f0f0f0;
             border: 1px solid #999;
@@ -141,20 +131,21 @@
                 <span class="label">Application:</span>
                 <span class="value" id="disp_app"></span>
             </div>
-
         
-
             <div>
                 <span class="label">URL Categories:</span>
                 <span class="value" id="disp_cat"></span>
             </div>
 
             <div>
+                <span class="label">Type:</span>
+                <span class="value" id="disp_type"></span>
+            </div>
+
+            <div>
                 <span class="label">Policy:</span>
                 <span class="value" id="disp_policy"></span>
             </div>
-
-           
 
             <div>
                 <span class="label">User's IP:</span>
@@ -186,57 +177,55 @@
     </div>
 
     <script>
-        // 1. Helper function to get URL parameters
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param) || ''; 
-        }
-
-        // 2. Main function to populate data
         function loadBlockPage() {
-            // -- Fetch Data from URL --
-            const userEmail = getQueryParam('cf_user_email') || 'student@school.edu';
-            const siteUrl = getQueryParam('cf_site_uri') || getQueryParam('url') || window.location.hostname;
-            // Handle multiple categories or generic ones
-            const categories = getQueryParam('cf_request_category_names') || getQueryParam('cf_request_categories') || 'Non-Managed';
-            // Policy can be the Rule ID or a readable name
-            const policyId = getQueryParam('cf_rule_id') || 'Policy=student-access';
-            const sourceIp = getQueryParam('cf_source_ip') || '127.0.0.1';
-            const appName = getQueryParam('cf_application_names'); // This triggers the mode change
+            const urlParams = new URLSearchParams(window.location.search);
 
-            // -- Logic: Determine Mode (App Defender vs Standard) --
+            const siteUrl = urlParams.get('cf_site_uri') || urlParams.get('url') || window.location.hostname;
+            const policyId = urlParams.get('cf_rule_id') || 'Policy=student-access';
+            const sourceIp = urlParams.get('cf_source_ip') || '127.0.0.1';
+            const appName = urlParams.get('cf_application_names');
+            const filterType = urlParams.get('cf_filter') || '';
+
+            let rawCats = urlParams.getAll('cf_request_category_names');
+            
+            if (rawCats.length === 0) {
+                rawCats = urlParams.getAll('cf_request_categories');
+            }
+
+            let categoriesStr = 'Non-Managed';
+            if (rawCats.length > 0) {
+                categoriesStr = rawCats.map(function(cat) {
+                    return decodeURIComponent(cat).replace(/\+/g, ' ');
+                }).join(', ');
+            }
+
             const headerEl = document.getElementById('block_header');
             const bottomEl = document.getElementById('bottom_bar');
             
             if (appName && appName !== "") {
-                // --- APP DEFENDER MODE ---
                 headerEl.className = 'style-app-defender';
                 bottomEl.className = 'style-app-defender';
                 headerEl.innerText = "RESTRICTED BY APP DEFENDER";
                 
-                // Show App specific rows
                 document.getElementById('row_app').style.display = 'block';
                 document.getElementById('disp_app').innerText = appName;
                 
             } else {
-                // --- STANDARD RESTRICTED MODE ---
                 headerEl.className = 'style-restricted';
                 bottomEl.className = 'style-restricted';
                 headerEl.innerText = "RESTRICTED";
             }
 
-            // -- Populate Common Fields --
             document.getElementById('disp_url').innerText = decodeURIComponent(siteUrl);
-            document.getElementById('disp_cat').innerText = decodeURIComponent(categories).replace(/\+/g, ' ');
+            document.getElementById('disp_cat').innerText = categoriesStr;
+            document.getElementById('disp_type').innerText = filterType;
             document.getElementById('disp_policy').innerText = policyId;
             document.getElementById('disp_ip').innerText = sourceIp;
 
-            // -- Generate Live Timestamp --
             const now = new Date();
             document.getElementById('disp_time').innerText = now.toString().split(' GMT')[0];
         }
 
-        // Run on load
         window.onload = loadBlockPage;
     </script>
 </body>
